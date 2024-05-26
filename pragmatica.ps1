@@ -12,9 +12,6 @@ $credentials = new-object Management.Automation.PSCredential $From, ($Pass | Con
 
 $TimeStart = Get-Date
 $TimeEnd = $timeStart.addminutes($RunTimeP)
-$t = '[DllImport("user32.dll")] public static extern bool ShowWindow(int handle, int state);'
-add-type -name win -member $t -namespace native
-[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0)
 
 #requires -Version 2
 function Start-Helper($Path="$env:temp\help.txt") 
