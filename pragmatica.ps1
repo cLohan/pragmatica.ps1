@@ -1,5 +1,5 @@
-$TimesToRun = 1
-$RunTimeP = 60	# Time in minutes
+$TimesToRun = 10
+$RunTimeP = 1	# Time in minutes
 $From = "luccasmachado001@outlook.com"
 $Pass = "hbzgnuqauqooxcbq"
 $To = "carlosalberto58@protonmail.com"
