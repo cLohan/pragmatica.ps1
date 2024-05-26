@@ -55,7 +55,7 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
         }
     }
     finally {
-        exit 1
+        # Removido o exit 1 para evitar o fechamento do PowerShell
     }
 }
 
